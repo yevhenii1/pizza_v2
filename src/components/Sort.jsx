@@ -1,18 +1,40 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+
+import { setSort } from '../redux/slices/filterSlice';
+
+export const lists = [
+  { name: 'популярности', sortProperty: 'rating' },
+  { name: 'цене', sortProperty: 'price' },
+  { name: 'алфавиту', sortProperty: 'title' },
+];
 
 const Sort = () => {
-  const [selected, setSelected] = React.useState(0);
+  const dispatch = useDispatch();
   const [open, setOpen] = React.useState(false);
+  const sortRef = React.useRef();
+  const sort = useSelector((state) => state.filter.sort);
 
-  const lists = ['популярности', 'цене', 'алфавиту'];
-  const listName = lists[selected];
-
-  const onClickItem = (i) => {
-    setSelected(i);
+  const onClickItem = (obj) => {
+    dispatch(setSort(obj));
     setOpen(false);
   };
+
+  React.useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.path.includes(sortRef.current)) {
+        setOpen(false);
+      }
+    };
+    document.body.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.body.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="sort">
+    <div ref={sortRef} className="sort">
       <div className="sort__label">
         <svg
           width="10"
@@ -26,14 +48,17 @@ const Sort = () => {
           />
         </svg>
         <b>Сортировка по:</b>
-        <span onClick={() => setOpen(!open)}>{listName}</span>
+        <span onClick={() => setOpen(!open)}>{sort.name}</span>
       </div>
       {open && (
         <div className="sort__popup">
           <ul>
-            {lists.map((item, i) => (
-              <li key={i} onClick={() => onClickItem(i)} className={selected === i ? 'active' : ''}>
-                {item}
+            {lists.map((obj, i) => (
+              <li
+                key={i}
+                onClick={() => onClickItem(obj)}
+                className={sort.sortProperty === obj.sortProperty ? 'active' : ''}>
+                {obj.name}
               </li>
             ))}
           </ul>
