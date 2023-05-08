@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import qs from 'qs';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 import { setCategoryId, setFilters } from '../redux/slices/filterSlice';
 import Categories from '../components/Categories';
@@ -9,6 +10,7 @@ import PizzaBlock from '../components/PizzaBlock';
 import Sort from '../components/Sort';
 import Skeleton from '../components/PizzaBlock/Skeleton';
 import { lists } from '../components/Sort';
+import { fetchPizzas } from '../redux/slices/pizzaSlice';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -16,7 +18,7 @@ const Home = () => {
   const isSearch = React.useRef(false);
   const isMounted = React.useRef(false);
   const { categoryId, sort } = useSelector((state) => state.filter);
-  const [items, setItems] = React.useState([]);
+  const items = useSelector((state) => state.pizza.items);
   const [isLoading, setIsLoading] = React.useState(true);
 
   const onClickCategory = (id) => {
@@ -24,18 +26,20 @@ const Home = () => {
     dispatch(setCategoryId(id));
   };
 
-  const fetchPizzas = () => {
+  const getPizzas = async () => {
     setIsLoading(true);
-    fetch(
-      `https://640f2de3cde47f68db43ec23.mockapi.io/items?${
-        categoryId > 0 ? `category=${categoryId}` : ''
-      }&sortBy=${sort.sortProperty}&order=desc`,
-    )
-      .then((res) => res.json())
-      .then((arr) => {
-        setItems(arr);
-        setIsLoading(false);
-      });
+
+    try {
+      dispatch(
+        fetchPizzas({
+          categoryId,
+          sort,
+        }),
+      );
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   React.useEffect(() => {
@@ -56,7 +60,7 @@ const Home = () => {
 
   React.useEffect(() => {
     if (!isSearch.current) {
-      fetchPizzas();
+      getPizzas();
     }
 
     isSearch.current = false;

@@ -21,16 +21,16 @@ const Sort = () => {
   };
 
   React.useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (!e.path.includes(sortRef.current)) {
+    const handleClickOutside = (event) => {
+      const path = event.composedPath ? event.composedPath() : event.path;
+
+      if (!path.includes(sortRef.current)) {
         setOpen(false);
       }
     };
     document.body.addEventListener('click', handleClickOutside);
 
-    return () => {
-      document.body.removeEventListener('click', handleClickOutside);
-    };
+    return () => document.body.removeEventListener('click', handleClickOutside);
   }, []);
 
   return (
