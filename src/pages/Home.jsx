@@ -18,8 +18,7 @@ const Home = () => {
   const isSearch = React.useRef(false);
   const isMounted = React.useRef(false);
   const { categoryId, sort } = useSelector((state) => state.filter);
-  const items = useSelector((state) => state.pizza.items);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const { items, status } = useSelector((state) => state.pizza);
 
   const onClickCategory = (id) => {
     console.log('id', id);
@@ -27,19 +26,12 @@ const Home = () => {
   };
 
   const getPizzas = async () => {
-    setIsLoading(true);
-
-    try {
-      dispatch(
-        fetchPizzas({
-          categoryId,
-          sort,
-        }),
-      );
-    } catch (error) {
-    } finally {
-      setIsLoading(false);
-    }
+    dispatch(
+      fetchPizzas({
+        categoryId,
+        sort,
+      }),
+    );
   };
 
   React.useEffect(() => {
@@ -84,11 +76,20 @@ const Home = () => {
         <Sort />
       </div>
       <h2 className="content__title">Все пиццы</h2>
-      <div className="content__items">
-        {isLoading
-          ? [...new Array(6)].map((_, i) => <Skeleton key={i} />)
-          : items.map((obj) => <PizzaBlock key={obj.id} {...obj} />)}
-      </div>
+      {status === 'error' ? (
+        <div>
+          <h2>
+            Произошла ошибка <icon>😕</icon>
+          </h2>
+          <p>Не удалось получить пиццы</p>
+        </div>
+      ) : (
+        <div className="content__items">
+          {status === 'loading'
+            ? [...new Array(6)].map((_, i) => <Skeleton key={i} />)
+            : items.map((obj) => <PizzaBlock key={obj.id} {...obj} />)}
+        </div>
+      )}
     </>
   );
 };
